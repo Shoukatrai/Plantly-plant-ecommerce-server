@@ -2,11 +2,22 @@ import express from "express";
 import dotenv from "dotenv";
 import { connectDB } from "./db/db.js";
 import { PrismaClient } from "@prisma/client";
+// Import Routes
+import productRoutes from "./routes/Product.js";
 dotenv.config();
 
 const app = express();
 export const Prisma = new PrismaClient();
 connectDB();
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+
+
+// Use Routes
+app.use("/api/products", productRoutes);
+
 
 app.get("/", (req, res) => {
   res.send("Hello World!");

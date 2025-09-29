@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import { connectDB } from "./db/db.js";
 import { PrismaClient } from "@prisma/client";
+import cors from "cors";
 // Import Routes
 import productRoutes from "./routes/Product.js";
 import categoryRoutes from "./routes/Category.js";
@@ -14,7 +15,7 @@ connectDB();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use(cors());
 // Use Routes
 app.use("/api/product", productRoutes);
 app.use("/api/category", categoryRoutes);

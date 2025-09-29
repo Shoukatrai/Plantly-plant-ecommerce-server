@@ -28,12 +28,15 @@ export const editProduct = async (req, res) => {
 export const deleteProduct = async (req, res) => {
   try {
     const id = req.params.id;
+    await Prisma.plant.deleteMany({
+      where: { categoryId: id },
+    });
     await Prisma.category.delete({
       where: { id: id },
     });
-    res.status(201).json("Product Deleted Successfully");
+    res.status(201).json("Category Deleted Successfully");
   } catch (error) {
-    res.status(500).json({ error: "Failed to Update product" });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -56,7 +59,9 @@ export const getSingleProduct = async (req, res) => {
 export const getProducts = async (req, res) => {
   try {
     console.log("ALL ProductS");
-    const products = await Prisma.category.findMany();
+    const products = await Prisma.category.findMany({
+      include: { products: true },
+    });
     res.status(201).json(products);
   } catch (error) {
     res.status(500).json({ error: error.message }); //"Failed to fetch products"

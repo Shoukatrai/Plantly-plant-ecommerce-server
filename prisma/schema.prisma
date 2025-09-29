@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  // output   = "../generated/prisma"
 }
 
 datasource db {
@@ -20,18 +19,90 @@ model Category {
 }
 
 model Plant {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
   name        String
-  slug        String   @unique
-  discount    Float?   @default(0)
-  rating      Float?   @default(0)
+  slug        String  @unique
+  discount    Float?  @default(0)
+  rating      Float?  @default(0)
   description String?
   price       Float
   imageUrl    String?
   isFeatured  Boolean @default(false)
-  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  categoryId  String   @db.ObjectId
-  stock       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  stock       Int     @default(0)
+
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId String   @db.ObjectId
+
+  createdBy   User?   @relation("UserCreatedPlants", fields: [createdById], references: [id])
+  createdById String? @db.ObjectId
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  OrderItem OrderItem[]
+  CartItem  CartItem[]
+  Review    Review[]
+}
+
+model User {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  email       String @unique
+  phoneNumber String @unique
+  password    String
+  role        String @default("user")
+
+  createdPlants Plant[] @relation("UserCreatedPlants")
+  orders        Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Cart      Cart[]
+  Review    Review[]
+}
+
+model Order {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  user      User        @relation(fields: [userId], references: [id])
+  userId    String      @db.ObjectId
+  items     OrderItem[]
+  createdAt DateTime    @default(now())
+}
+
+model OrderItem {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  plant    Plant  @relation(fields: [plantId], references: [id])
+  plantId  String @db.ObjectId
+  order    Order  @relation(fields: [orderId], references: [id])
+  orderId  String @db.ObjectId
+  quantity Int    @default(1)
+  price    Float
+}
+
+model Cart {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  user      User       @relation(fields: [userId], references: [id])
+  userId    String     @db.ObjectId
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  cart     Cart   @relation(fields: [cartId], references: [id])
+  cartId   String @db.ObjectId
+  plant    Plant  @relation(fields: [plantId], references: [id])
+  plantId  String @db.ObjectId
+  quantity Int    @default(1)
+}
+
+model Review {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  rating    Int
+  comment   String?
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @db.ObjectId
+  plant     Plant    @relation(fields: [plantId], references: [id])
+  plantId   String   @db.ObjectId
+  createdAt DateTime @default(now())
 }

@@ -1,36 +1,49 @@
 import jwt from "jsonwebtoken";
-import { Prisma } from "../app.js";
+import User from "../models/Auth.js";
 
 export const authCheck = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "No token provided" });
+      return res.status(403).json({
+        status: false,
+        data: null,
+        message: "No token provided!",
+      });
     }
 
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
-
-    // Attach user to request
-    const user = await Prisma.user.findUnique({
-      where: { id: decoded.id },
-    });
-
+    console.log("decoded", decoded);
+    const user = await User.findById(decoded.id);
+    console.log("user", user);
     if (!user) {
-      return res.status(401).json({ message: "Invalid token" });
+      return res.status(403).json({
+        status: false,
+        data: null,
+        message: "Invalid token!",
+      });
     }
 
     req.user = user;
     next();
   } catch (error) {
     console.error("Auth error:", error);
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({
+      status: false,
+      data: null,
+      message: "Unauthorized!",
+    });
   }
 };
 
-export const vendorCheck = (req, res, next) => {
-  if (req.user.role !== "vendor") {
-    return res.status(403).json({ message: "Access denied: Vendors only" });
+export const sellerCheck = (req, res, next) => {
+  if (req.user.role !== "seller") {
+    return res.status(403).json({
+      status: false,
+      data: null,
+      message: "Access denied: Sellers only!",
+    });
   }
   next();
 };

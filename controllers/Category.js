@@ -1,31 +1,78 @@
-import { Prisma } from "../app.js";
+import Category from "../models/Category.js";
+import slugify from "slugify";
 
-export const createProduct = async (req, res) => {
+export const createCategory = async (req, res) => {
   try {
-    console.log(req.body);
-    const product = await Prisma.category.create({
-      data: req.body,
+    const { name, description, imageUrl } = req.body;
+
+    const isCategory = await Category.findOne({ name });
+    if (isCategory) {
+      return res.status(400).json({
+        status: false,
+        data: null,
+        message: "Category already exists!",
+      });
+    }
+
+    const slug = slugify(name, { lower: true, strict: true });
+
+    const category = await Category.create({
+      name,
+      slug,
+      description,
+      imageUrl,
     });
-    res.status(201).json(product);
+
+    res.status(201).json({
+      status: true,
+      data: category,
+      message: "Category created successfully!",
+    });
   } catch (error) {
-    res.status(500).json({ error: "Failed to create Category" });
+    res.status(500).json({
+      status: false,
+      data: null,
+      message: error.message,
+    });
   }
 };
 
-export const editProduct = async (req, res) => {
+export const editCategory = async (req, res) => {
   try {
-    const id = req.params.id;
-    const product = await Prisma.category.update({
-      where: { id: id },
-      data: req.body,
+    const { id } = req.params;
+    let updateData = { ...req.body };
+    if (updateData.name) {
+      updateData.slug = slugify(updateData.name, { lower: true, strict: true });
+    }
+
+    const category = await Category.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
     });
-    res.status(201).json(product);
+
+    if (!category) {
+      return res.status(404).json({
+        status: false,
+        data: null,
+        message: "Category not found",
+      });
+    }
+
+    res.status(200).json({
+      status: true,
+      data: category,
+      message: "Category updated successfully!",
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message }); // "Failed to Update product"
+    res.status(500).json({
+      status: false,
+      data: null,
+      message: error.message,
+    });
   }
 };
 
-export const deleteProduct = async (req, res) => {
+export const deleteCategory = async (req, res) => {
   try {
     const id = req.params.id;
     await Prisma.plant.deleteMany({
@@ -40,7 +87,7 @@ export const deleteProduct = async (req, res) => {
   }
 };
 
-export const getSingleProduct = async (req, res) => {
+export const getSingleCategory = async (req, res) => {
   try {
     console.log("getSingleProduct");
     const id = req.params.id;
@@ -56,7 +103,7 @@ export const getSingleProduct = async (req, res) => {
   }
 };
 
-export const getProducts = async (req, res) => {
+export const getCategories = async (req, res) => {
   try {
     console.log("ALL ProductS");
     const products = await Prisma.category.findMany({
@@ -64,6 +111,6 @@ export const getProducts = async (req, res) => {
     });
     res.status(201).json(products);
   } catch (error) {
-    res.status(500).json({ error: error.message }); //"Failed to fetch products"
+    res.status(500).json({ error: error.message });
   }
 };

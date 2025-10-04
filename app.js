@@ -6,6 +6,7 @@ import cors from "cors";
 // import productRoutes from "./routes/Product.js";
 import categoryRoutes from "./routes/Category.js";
 import userRoutes from "./routes/User.js";
+import chatRoutes from "./routes/chat.js";
 // import orderRoutes from "./routes/Order.js";
 // import cartRoutes from "./routes/Cart.js";
 
@@ -21,6 +22,7 @@ app.use(cors());
 // app.use("/api/product", productRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/chat", chatRoutes);
 // app.use("/api/order", orderRoutes);
 // app.use("/api/cart", cartRoutes);
 
